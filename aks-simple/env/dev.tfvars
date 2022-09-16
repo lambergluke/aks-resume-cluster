@@ -4,7 +4,7 @@ kubernetes_cluster_aks           = 1
 kubernetes_cluster_node_pool_app = 1
 
 # Global
-location                         = "East US"
+location                         = "East US 2"
 
 # Resource Group
 rg_name                          = "aks_resources_2"

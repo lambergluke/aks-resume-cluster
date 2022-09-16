@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 env:
-  RESOURCE_GROUP: "dank_resources2"
-  CLUSTER_NAME: "aks-dank_prime"
+  RESOURCE_GROUP: "aks_resources2"
+  CLUSTER_NAME: "aks-ruke-2"
 
 jobs:
   kubetime:
@@ -23,7 +23,10 @@ jobs:
       uses: azure/login@v1.4.3
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+    #- name: Helm tool installer
+    #  uses: Azure/setup-helm@v3.3
+    #  with:
+    #    token: ${{ secrets.GITHUB_TOKEN }} # only needed if version is 'latest'
     # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
     - name: Get K8s context
       uses: azure/aks-set-context@v2.0
@@ -44,3 +47,19 @@ jobs:
       run: |
         kubelogin convert-kubeconfig -l azurecli
         kubectl get nodes
+        kubectl create ns actions-runner-system
+        kubectl create secret generic controller-manager \
+          -n actions-runner-system \
+          --from-literal=github_token=${ARC_PAT}
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+        helm install \
+          cert-manager jetstack/cert-manager \
+          --namespace cert-manager \
+          --create-namespace \
+          --version v1.9.1 \
+          --set installCRDs=true
+        helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
+        helm upgrade --install --namespace actions-runner-system \
+          --wait actions-runner-controller actions-runner-controller/actions-runner-controller
+        kubectl apply -f manifests

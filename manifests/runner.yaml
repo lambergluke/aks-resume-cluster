@@ -1,0 +1,14 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: Runner
+metadata:
+  name: texlive-runboy
+spec:
+  repository: lambergluke/my-resume
+  image: ghcr.io/lambergluke/texlive-x64:20220916.1
+  imagePullPolicy: IfNotPresent
+  dockerEnabled: false
+  ephemeral: false
+  labels:
+    - texlive
+    - x64
+  env: []

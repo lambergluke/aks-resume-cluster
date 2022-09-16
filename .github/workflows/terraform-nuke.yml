@@ -14,8 +14,10 @@ env:
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
 jobs:
-    
-  destroy:
+  plan:
+    strategy: 
+      matrix: 
+        env: [dev]
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
 

@@ -1,12 +1,14 @@
 name: 'Terraform'
 
-on: 
-  pull_request:
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
 
 env:
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -16,16 +18,12 @@ env:
 
 jobs:
   plan:
-    strategy: 
-      matrix: 
-        env: [prime, beta]
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: aks/aks-simple
 
     steps:
     - name: Checkout
@@ -33,55 +31,36 @@ jobs:
 
     - name: Terraform Plan
       run: |
-        terraform init -backend-config=key=${{ matrix.env  }}.tfvars
-        terraform plan -no-color -input=false -var-file=env/${{ matrix.env  }}.tfvars -out tfplan
-
-    - name: Prep Plan for Comment
-      run: |
-        terraform show -no-color tfplan > tfplan.txt
-        sed -i -E 's/^([[:space:]]+)([-+])/\2\1/g' tfplan.txt
-        PLAN=$(cat tfplan.txt)
-        echo "PLAN<<EOF" >> $GITHUB_ENV
-        echo "$PLAN" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV  
-        
-    - uses: marocchino/sticky-pull-request-comment@v2
+        terraform init
+        terraform plan -input=false -out=tfplan
+    - name: Upload Plan Artifact
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v3.0.0
       with:
-        header: ${{ matrix.env }}
-        message: |
-          ## ${{ matrix.env  }} Plan
-          ```diff
-          ${{ env.PLAN }}
-          ```
-        
-#     - name: Create PR comment
-#       uses: peter-evans/create-or-update-comment@v2
-#       with:
-#         issue-number: ${{ github.event.number }}
-#         body: |
-#           ## ${{ matrix.env  }} Plan
-#           ```diff
-#           ${{ env.PLAN }}
-#           ```
-#         reactions: 'rocket'   
+        name: tfplan
+        path: tfplan
     
-#   apply:
-#     needs: plan
-#     if: github.ref == 'refs/heads/main'
-#     name: 'Terraform Apply'
-#     runs-on: ubuntu-latest
+  apply:
+    needs: plan
+    if: github.ref == 'refs/heads/main'
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
 
-#     defaults:
-#       run:
-#         shell: bash
-#         working-directory: terraform
+    defaults:
+      run:
+        shell: bash
 
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v3
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
 
-#     - name: Terraform Apply
-#       run: |
-#         terraform init
-#         terraform apply -input=false -auto-approve
-        
+    - name: Download Plan Artifact
+      uses: actions/download-artifact@v3.0.0
+      with:
+        name: tfplan
+        path: .
+
+    - name: Terraform Apply
+      run: |
+        terraform init
+        terraform apply -input=false tfplan

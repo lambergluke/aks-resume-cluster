@@ -31,4 +31,4 @@ jobs:
     - name: Terraform Destroy
       run: |
         terraform init -backend-config=key=${{ matrix.env  }}.tfvars
-        terraform destroy -var-file=env/${{ matrix.env  }}.tfvars -out tfplan  -auto-approve
+        terraform destroy -var-file=env/${{ matrix.env  }}.tfvars -auto-approve

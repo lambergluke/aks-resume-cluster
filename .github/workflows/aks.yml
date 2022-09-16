@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  RESOURCE_GROUP: "aks_resources2"
+  RESOURCE_GROUP: "aks_resources_2"
   CLUSTER_NAME: "aks-ruke-2"
 
 jobs:

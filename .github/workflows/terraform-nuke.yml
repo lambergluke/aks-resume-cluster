@@ -31,4 +31,4 @@ jobs:
     - name: Terraform Destroy
       run: |
         terraform init
-        terraform destroy -input=false -auto-approve
+        terraform destroy -var-file=env/${{ matrix.env  }}.tfvars -out tfplan  -auto-approve

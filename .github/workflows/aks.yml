@@ -2,7 +2,7 @@ name: Speak to AKS
 
 on:
   workflow_dispatch:
-
+  workflow_call:
 env:
   RESOURCE_GROUP: "aks_resources_2"
   CLUSTER_NAME: "aks-ruke-2"

@@ -1,7 +1,8 @@
 name: 'Terraform'
 
-on: [workflow_dispatch]
-
+on: 
+  workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
   issues: write

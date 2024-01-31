@@ -58,7 +58,7 @@ jobs:
           cert-manager jetstack/cert-manager \
           --namespace cert-manager \
           --create-namespace \
-          --version v1.9.1 \
+          --version v1.13.3 \
           --set installCRDs=true
         helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
         helm upgrade --install --namespace actions-runner-system \
